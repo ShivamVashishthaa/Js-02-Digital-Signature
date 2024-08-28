@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signature App</title>
+    <!-- <link rel="stylesheet" href="index.css"> -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        font-size: 64.2%;
+        background: #272525;
+        color: #fff;
+      }
+      .canvas {
+        border: 2px solid black;
+      }
+      .main {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        & .top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px;
+          margin-top: 3rem;
+          margin-bottom: 1rem;
+
+          & .block {
+            width: 22rem;
+
+            & p {
+              font-size: 1.5rem;
+            }
+          }
+
+          & .form-control {
+            width: 100%;
+            height: 3rem;
+          }
+        }
+
+        & .bottom {
+          display: flex;
+          justify-content: space-evenly;
+          align-items: center;
+          margin-top: 1rem;
+          margin-bottom: 2rem;
+
+          & .btn {
+            padding: 1rem;
+            width: 22rem;
+            border: none;
+            cursor: pointer;
+            border-radius: 1rem;
+          }
+
+          & .btn-success {
+            background-color: #4caf50;
+          }
+
+          & .btn-danger {
+            background-color: #f44336;
+          }
+
+          & .btn-warning {
+            background-color: #ffeb3b;
+          }
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+      <div class="top">
+        <div class="block">
+          <p>text color picker</p>
+          <input type="color" class="form-control" id="color-picker" />
+        </div>
+        <div class="block">
+          <p>Background</p>
+          <input type="color" class="form-control" id="canvas-color" />
+        </div>
+        <div class="block">
+          <p>Font Size</p>
+          <select id="font-size" class="form-control">
+            <option value="5">5px</option>
+            <option value="10">10px</option>
+            <option value="20">20px</option>
+            <option value="30">30px</option>
+            <option value="40">40px</option>
+            <option value="50">50px</option>
+          </select>
+        </div>
+      </div>
+      <canvas class="canvas" id="my-canvas" width="700" height="400"></canvas>
+      <div class="bottom">
+        <button type="button" class="btn btn-danger" id="clear-button">
+          Clear
+        </button>
+        <button type="button" class="btn btn-success" id="save-button">
+          Save & download
+        </button>
+        <button type="button" class="btn btn-warning" id="retrieve-button">
+          Retrieve saved signature
+        </button>
+      </div>
+    </div>
+    <script>
+      const color_picker = document.getElementById("color-picker");
+      const canvas_color = document.getElementById("canvas-color");
+      const font_size = document.getElementById("font-size");
+      const my_canvas = document.getElementById("my-canvas");
+      const clear_button = document.getElementById("clear-button");
+      const save_button = document.getElementById("save-button");
+      const retrieve_button = document.getElementById("retrieve-button");
+
+      const ctx = my_canvas.getContext("2d");
+
+      color_picker.addEventListener("change", (e) => {
+        ctx.strokeStyle = e.target.value;
+        // ctx.fillStyle = e.target.value;
+      });
+
+      my_canvas.addEventListener("mousedown", (e) => {
+        // to find the mouse pointer location
+        isDrawing = true;
+        lastX = e.offsetX;
+        lastY = e.offsetY;
+        // console.log(lastX, lastY);
+      });
+      my_canvas.addEventListener("mousemove", (e) => {
+        if (isDrawing) {
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(e.offsetX, e.offsetY);
+          ctx.stroke();
+          lastX = e.offsetX;
+          lastY = e.offsetY;
+        }
+      });
+      my_canvas.addEventListener("mouseup", (e) => {
+        isDrawing = false;
+      });
+
+      canvas_color.addEventListener("change", (e) => {
+        ctx.fillStyle = e.target.value;
+        console.log(ctx);
+
+        ctx.fillRect(0, 0, my_canvas.width, my_canvas.height);
+      });
+      font_size.addEventListener("change", (e) => {
+        ctx.lineWidth = e.target.value;
+      });
+
+      clear_button.addEventListener("click", () => {
+        ctx.clearRect(0, 0, my_canvas.width, my_canvas.height);
+      });
+
+      //   Saves the canvas content as a base64-encoded PNG image in local storage and creates a downloadable link to download the image as "my-canvas.png".
+      save_button.addEventListener("click", () => {
+        localStorage.setItem("canvasContent", my_canvas.toDataURL());
+        let link = document.createElement("a");
+        link.download = "my-canvas.png";
+        link.href = my_canvas.toDataURL();
+        link.click();
+      });
+      // Retrieves the saved canvas content from local storage, creates an Image object, and draws the image back onto the canvas if it exists.
+      retrieve_button.addEventListener("click", () => {
+        let savedCanvas = localStorage.getItem("canvasContent");
+        if (savedCanvas) {
+          let img = new Image();
+          img.src = savedCanvas;
+          ctx.drawImage(img, 0, 0);
+        }
+      });
+    </script>
+  </body>
+</html>
